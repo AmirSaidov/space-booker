@@ -19,7 +19,41 @@ export interface Room {
 
 export type Screen =
   | "login"
+  | "register"
+  | "forgot"
   | "workspace"
   | "scanner"
   | "details"
-  | "success";
+  | "success"
+  | "bookings"
+  | "history"
+  | "profile"
+  | "notifications"
+  | "rooms";
+
+export interface Booking {
+  id: string;
+  deskId: number;
+  roomId: string;
+  roomName: string;
+  floor: number;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:MM
+  endTime?: string; // HH:MM, present in history
+  status: "active" | "completed" | "cancelled";
+}
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  text: string;
+  time: string;
+  read: boolean;
+}
+
+export interface UserProfile {
+  name: string;
+  email: string;
+  position: string;
+  department: string;
+}

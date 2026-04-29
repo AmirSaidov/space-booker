@@ -8,10 +8,12 @@ interface DetailsScreenProps {
   room: Room;
   onBack: () => void;
   onBook: () => void;
+  onRelease: () => void;
 }
 
-export const DetailsScreen = ({ desk, room, onBack, onBook }: DetailsScreenProps) => {
+export const DetailsScreen = ({ desk, room, onBack, onBook, onRelease }: DetailsScreenProps) => {
   const isAvailable = desk.status === "available";
+  const isMine = desk.status === "mine";
 
   return (
     <div className="flex-1 flex flex-col bg-background">
@@ -46,17 +48,33 @@ export const DetailsScreen = ({ desk, room, onBack, onBook }: DetailsScreenProps
               <dd className="text-base font-semibold mt-0.5">{room.floor} этаж</dd>
             </div>
           </dl>
+
+          {!isAvailable && !isMine && (
+            <p className="mt-6 text-sm text-muted-foreground">
+              Это место уже занято другим сотрудником.
+            </p>
+          )}
         </div>
       </div>
 
       <div className="px-5 pb-6 pt-4 flex flex-col gap-3">
-        <Button
-          onClick={onBook}
-          disabled={!isAvailable}
-          className="h-12 rounded-xl text-base font-semibold shadow-button"
-        >
-          Забронировать
-        </Button>
+        {isMine ? (
+          <Button
+            onClick={onRelease}
+            variant="outline"
+            className="h-12 rounded-xl text-base font-semibold border-destructive/30 text-destructive hover:bg-destructive-soft hover:text-destructive"
+          >
+            Освободить
+          </Button>
+        ) : (
+          <Button
+            onClick={onBook}
+            disabled={!isAvailable}
+            className="h-12 rounded-xl text-base font-semibold shadow-button"
+          >
+            Забронировать
+          </Button>
+        )}
         <Button
           onClick={onBack}
           variant="outline"

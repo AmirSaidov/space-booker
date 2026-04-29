@@ -3,6 +3,7 @@ import { Desk } from "@/types/booking";
 interface FloorMapProps {
   desks: Desk[];
   highlightId?: number | null;
+  onDeskClick?: (desk: Desk) => void;
 }
 
 const STATUS_DOT: Record<Desk["status"], string> = {
@@ -11,7 +12,7 @@ const STATUS_DOT: Record<Desk["status"], string> = {
   mine: "bg-success",
 };
 
-export const FloorMap = ({ desks, highlightId }: FloorMapProps) => {
+export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => {
   return (
     <div
       className="relative w-full bg-background border border-border rounded-2xl p-3"
@@ -31,12 +32,16 @@ export const FloorMap = ({ desks, highlightId }: FloorMapProps) => {
         {desks.map((d) => {
           const isMine = d.status === "mine" || d.id === highlightId;
           return (
-            <div
+            <button
               key={d.id}
-              className={`relative rounded-md border flex items-center justify-center text-sm font-semibold transition-colors ${
+              type="button"
+              onClick={() => onDeskClick?.(d)}
+              className={`relative rounded-md border flex items-center justify-center text-sm font-semibold transition-all active:scale-95 ${
                 isMine
                   ? "bg-success border-success text-success-foreground shadow-soft"
-                  : "bg-background border-foreground/30 text-foreground"
+                  : d.status === "occupied"
+                  ? "bg-destructive-soft border-destructive/40 text-foreground"
+                  : "bg-background border-foreground/30 text-foreground hover:border-primary"
               }`}
               style={{
                 gridColumn: `${d.col} / span ${d.w ?? 1}`,
@@ -49,7 +54,7 @@ export const FloorMap = ({ desks, highlightId }: FloorMapProps) => {
                   className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-background ${STATUS_DOT[d.status]}`}
                 />
               )}
-            </div>
+            </button>
           );
         })}
       </div>

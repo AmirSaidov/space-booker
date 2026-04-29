@@ -1,7 +1,10 @@
 import { Map, Calendar, Clock, User } from "lucide-react";
 
+export type NavKey = "map" | "bookings" | "history" | "profile";
+
 interface BottomNavProps {
-  active?: "map" | "bookings" | "history" | "profile";
+  active?: NavKey;
+  onNavigate?: (key: NavKey) => void;
 }
 
 const items = [
@@ -11,7 +14,7 @@ const items = [
   { key: "profile", label: "Профиль", icon: User },
 ] as const;
 
-export const BottomNav = ({ active = "map" }: BottomNavProps) => {
+export const BottomNav = ({ active = "map", onNavigate }: BottomNavProps) => {
   return (
     <nav className="border-t border-border bg-background px-2 pt-2 pb-3">
       <ul className="flex items-center justify-around">
@@ -21,6 +24,7 @@ export const BottomNav = ({ active = "map" }: BottomNavProps) => {
             <li key={key}>
               <button
                 type="button"
+                onClick={() => onNavigate?.(key)}
                 className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-lg transition-colors ${
                   isActive ? "text-primary" : "text-muted-foreground"
                 }`}

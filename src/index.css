@@ -9,34 +9,44 @@ All colors MUST be HSL.
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 222 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 222 25% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 222 89% 55%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 222 89% 96%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 20% 97%;
+    --secondary-foreground: 222 25% 18%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 20% 96%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 222 89% 96%;
+    --accent-foreground: 222 89% 45%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --success: 145 65% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 145 60% 94%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --destructive: 0 75% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 0 80% 96%;
 
-    --radius: 0.5rem;
+    --border: 220 16% 92%;
+    --input: 220 16% 92%;
+    --ring: 222 89% 55%;
+
+    --radius: 0.875rem;
+
+    --shadow-card: 0 4px 20px -8px hsl(222 30% 20% / 0.08);
+    --shadow-soft: 0 2px 12px -4px hsl(222 30% 20% / 0.06);
+    --shadow-button: 0 4px 14px -4px hsl(222 89% 55% / 0.35);
 
     --sidebar-background: 0 0% 98%;
 

@@ -5,9 +5,11 @@ import illustration from "@/assets/login-illustration.png";
 
 interface LoginScreenProps {
   onLogin: () => void;
+  onRegister: () => void;
+  onForgot: () => void;
 }
 
-export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
+export const LoginScreen = ({ onLogin, onRegister, onForgot }: LoginScreenProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -81,11 +83,18 @@ export const LoginScreen = ({ onLogin }: LoginScreenProps) => {
         >
           Войти
         </Button>
+        <button
+          type="button"
+          onClick={onForgot}
+          className="text-xs text-primary self-center hover:underline mt-1"
+        >
+          Забыли пароль?
+        </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Нет аккаунта?{" "}
-        <button className="text-primary font-semibold hover:underline">
+        <button onClick={onRegister} className="text-primary font-semibold hover:underline">
           Регистрация
         </button>
       </p>

@@ -13,11 +13,11 @@ interface Props {
 export const ProfileScreen = ({ user, onLogout, onNavigate, onOpenNotifications }: Props) => {
   return (
     <div className="flex-1 flex flex-col bg-background">
-      <header className="px-5 pt-4 pb-3 text-center">
+      <header className="px-5 md:px-8 pt-4 pb-3 text-center">
         <h1 className="text-base font-semibold">Профиль</h1>
       </header>
 
-      <div className="flex-1 px-5 pt-2 pb-4 space-y-4 overflow-y-auto">
+      <div className="flex-1 px-5 md:px-8 pt-2 pb-4 space-y-4 overflow-y-auto">
         <section className="rounded-2xl border border-border bg-card shadow-card p-5 flex items-center gap-4">
           <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold">
             {user.name.charAt(0)}

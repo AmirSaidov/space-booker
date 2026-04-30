@@ -15,11 +15,11 @@ export const BookingsScreen = ({ bookings, onCancel, onScan, onNavigate }: Props
 
   return (
     <div className="flex-1 flex flex-col bg-background">
-      <header className="px-5 pt-4 pb-3 text-center">
+      <header className="px-5 md:px-8 pt-4 pb-3 text-center">
         <h1 className="text-base font-semibold">Мои брони</h1>
       </header>
 
-      <div className="flex-1 px-5 pt-2 pb-4 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-5 md:px-8 pt-2 pb-4 space-y-3 overflow-y-auto">
         {active.length === 0 && (
           <div className="mt-16 text-center">
             <div className="mx-auto w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
@@ -47,7 +47,7 @@ export const BookingsScreen = ({ bookings, onCancel, onScan, onNavigate }: Props
               </span>
             </div>
             <dl className="mt-4 space-y-2 text-sm">
-              <Row icon={<MapPin className="w-4 h-4" />} label={`${b.roomName}, ${b.floor} этаж`} />
+              <Row icon={<MapPin className="w-4 h-4" />} label={b.roomName} />
               <Row icon={<Calendar className="w-4 h-4" />} label={b.date} />
               <Row icon={<Clock className="w-4 h-4" />} label={`с ${b.startTime}`} />
             </dl>

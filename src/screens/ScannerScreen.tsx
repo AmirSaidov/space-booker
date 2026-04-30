@@ -1,21 +1,15 @@
-import { useEffect } from "react";
 import { X, Flashlight } from "lucide-react";
+import { QrScanner } from "@/components/qr/QrScanner";
 
 interface ScannerScreenProps {
   onClose: () => void;
-  onScanned: () => void;
+  onScanned: (decodedText: string) => void;
 }
 
 export const ScannerScreen = ({ onClose, onScanned }: ScannerScreenProps) => {
-  // Auto "scan" after a short delay to simulate a successful read
-  useEffect(() => {
-    const t = setTimeout(onScanned, 2200);
-    return () => clearTimeout(t);
-  }, [onScanned]);
-
   return (
     <div className="flex-1 relative bg-[#1a1410] text-white overflow-hidden">
-      {/* Faux camera background */}
+      {/* Dark backdrop */}
       <div
         aria-hidden
         className="absolute inset-0"
@@ -34,7 +28,7 @@ export const ScannerScreen = ({ onClose, onScanned }: ScannerScreenProps) => {
       />
 
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-5 pt-4 pb-3">
+      <header className="relative z-10 flex items-center justify-between px-5 md:px-8 pt-4 pb-3">
         <button
           onClick={onClose}
           className="p-1.5 -ml-1.5 text-white"
@@ -47,19 +41,10 @@ export const ScannerScreen = ({ onClose, onScanned }: ScannerScreenProps) => {
       </header>
 
       {/* Scan window */}
-      <div className="relative z-10 flex-1 flex items-center justify-center px-8 pt-6">
-        <div className="relative w-full aspect-square max-w-[280px]">
-          {/* Mock QR */}
-          <div className="absolute inset-6 bg-white rounded-md flex items-center justify-center overflow-hidden">
-            <div
-              className="w-full h-full"
-              style={{
-                backgroundImage:
-                  "linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%), linear-gradient(45deg, #000 25%, transparent 25%, transparent 75%, #000 75%)",
-                backgroundSize: "16px 16px",
-                backgroundPosition: "0 0, 8px 8px",
-              }}
-            />
+      <div className="relative z-10 flex-1 flex items-center justify-center px-6 sm:px-8 pt-4 pb-6">
+        <div className="relative w-full aspect-square max-w-[360px]">
+          <div className="absolute inset-0">
+            <QrScanner onDecode={onScanned} />
           </div>
           {/* Corner brackets */}
           {[
@@ -73,11 +58,6 @@ export const ScannerScreen = ({ onClose, onScanned }: ScannerScreenProps) => {
               className={`absolute w-10 h-10 border-white ${c}`}
             />
           ))}
-          {/* Scan line */}
-          <span
-            aria-hidden
-            className="absolute left-6 right-6 h-0.5 bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.9)] animate-scan"
-          />
         </div>
       </div>
 
@@ -92,13 +72,18 @@ export const ScannerScreen = ({ onClose, onScanned }: ScannerScreenProps) => {
       </div>
 
       <style>{`
-        @keyframes scan {
-          0% { top: 12%; opacity: 0; }
-          15% { opacity: 1; }
-          85% { opacity: 1; }
-          100% { top: 88%; opacity: 0; }
+        /* Make html5-qrcode output fill the square neatly */
+        [id^="qr-reader-"] video,
+        [id^="qr-reader-"] canvas {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover;
         }
-        .animate-scan { animation: scan 2s ease-in-out infinite; }
+
+        /* Hide html5-qrcode's shaded scan box/overlay (we draw our own frame) */
+        #qr-shaded-region {
+          display: none !important;
+        }
       `}</style>
     </div>
   );

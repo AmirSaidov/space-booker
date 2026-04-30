@@ -1,0 +1,94 @@
+from django.db import transaction
+from django.utils import timezone
+
+from .models import OccupancyHistory, Place, Room, User
+
+
+def release_place(place_id):
+    with transaction.atomic():
+        try:
+            place = Place.objects.select_for_update().get(id=place_id)
+        except Place.DoesNotExist:
+            return None, None, "Place with this ID was not found"
+
+        if place.status == 'free':
+            return None, None, "Place is already free"
+
+        history = None
+        if place.user and place.occupied_at:
+            history = OccupancyHistory.objects.create(
+                user=place.user,
+                place=place,
+                start_time=place.occupied_at,
+                end_time=timezone.now(),
+            )
+
+        place.user = None
+        place.status = 'free'
+        place.occupied_at = None
+        place.save()
+
+        return place, history, None
+
+
+def occupy_specific_place(user_id, place_id, qr_code=None):
+    with transaction.atomic():
+        try:
+            user = User.objects.get(id=user_id)
+            place = Place.objects.select_for_update().get(id=place_id)
+        except (User.DoesNotExist, Place.DoesNotExist):
+            return None, "User or place was not found"
+
+        if place.qr_code and place.qr_code != qr_code:
+            return None, "QR код не совпадает с этим местом"
+        elif not place.qr_code and qr_code:
+             return None, "Для этого места еще не задан QR код в системе"
+
+        if place.status == 'occupied':
+            return None, "Place is already occupied"
+
+        if Place.objects.filter(user=user, status='occupied').exists():
+            return None, "User already occupies another place"
+
+        place.user = user
+        place.status = 'occupied'
+        place.occupied_at = timezone.now()
+        place.save()
+
+        return place, None
+
+
+def occupy_place_in_room(user_id, qr_code):
+    try:
+        if not User.objects.filter(id=user_id).exists():
+            return None, f"User with ID {user_id} was not found"
+
+        try:
+            room = Room.objects.get(qr_code=qr_code)
+        except Room.DoesNotExist:
+            return None, "Room was not found"
+
+        existing_place = Place.objects.filter(room=room, user_id=user_id).first()
+        if existing_place:
+            return existing_place, None
+
+        with transaction.atomic():
+            place = (
+                Place.objects.select_for_update()
+                .filter(room=room, user__isnull=True, status='free')
+                .order_by('number')
+                .first()
+            )
+
+            if not place:
+                return None, "No free places available"
+
+            place.user_id = user_id
+            place.status = 'occupied'
+            place.occupied_at = timezone.now()
+            place.save()
+
+            return place, None
+
+    except Exception as exc:
+        return None, f"Server error: {exc}"

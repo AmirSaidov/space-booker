@@ -12,11 +12,11 @@ export const HistoryScreen = ({ bookings, onNavigate }: Props) => {
 
   return (
     <div className="flex-1 flex flex-col bg-background">
-      <header className="px-5 pt-4 pb-3 text-center">
+      <header className="px-5 md:px-8 pt-4 pb-3 text-center">
         <h1 className="text-base font-semibold">История</h1>
       </header>
 
-      <div className="flex-1 px-5 pt-2 pb-4 space-y-3 overflow-y-auto">
+      <div className="flex-1 px-5 md:px-8 pt-2 pb-4 space-y-3 overflow-y-auto">
         {past.length === 0 && (
           <div className="mt-16 text-center">
             <div className="mx-auto w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
@@ -48,7 +48,7 @@ export const HistoryScreen = ({ bookings, onNavigate }: Props) => {
             </div>
             <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="w-4 h-4" />
-              {b.roomName}, {b.floor} этаж
+              {b.roomName}
               {b.endTime && (
                 <span className="ml-auto tabular-nums">
                   {b.startTime}–{b.endTime}

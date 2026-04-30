@@ -15,18 +15,18 @@ const STATUS_DOT: Record<Desk["status"], string> = {
 export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => {
   return (
     <div
-      className="relative w-full bg-background border border-border rounded-2xl p-3"
+      className="relative w-full bg-background border border-border rounded-2xl p-3 sm:p-4 md:p-6"
       style={{
         backgroundImage:
           "linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)",
-        backgroundSize: "24px 24px",
+        backgroundSize: "clamp(20px, 2.2vw, 28px) clamp(20px, 2.2vw, 28px)",
       }}
     >
       <div
-        className="grid gap-2"
+        className="grid gap-2 sm:gap-3"
         style={{
           gridTemplateColumns: "repeat(6, 1fr)",
-          gridAutoRows: "44px",
+          gridAutoRows: "clamp(44px, 5.2vw, 68px)",
         }}
       >
         {desks.map((d) => {

@@ -10,7 +10,7 @@ interface Props {
 export const NotificationsScreen = ({ notifications, onBack, onMarkRead }: Props) => {
   return (
     <div className="flex-1 flex flex-col bg-background">
-      <header className="px-5 pt-4 pb-3 grid grid-cols-3 items-center">
+      <header className="px-5 md:px-8 pt-4 pb-3 grid grid-cols-3 items-center">
         <button
           onClick={onBack}
           className="inline-flex items-center gap-1 text-sm text-foreground -ml-1.5 justify-self-start"
@@ -22,7 +22,7 @@ export const NotificationsScreen = ({ notifications, onBack, onMarkRead }: Props
         <span />
       </header>
 
-      <div className="flex-1 px-5 pt-2 pb-4 space-y-2 overflow-y-auto">
+      <div className="flex-1 px-5 md:px-8 pt-2 pb-4 space-y-2 overflow-y-auto">
         {notifications.length === 0 && (
           <div className="mt-16 text-center">
             <div className="mx-auto w-16 h-16 rounded-full bg-secondary flex items-center justify-center">

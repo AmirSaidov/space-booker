@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import illustration from "@/assets/login-illustration.png";
 
 interface LoginScreenProps {
-  onLogin: () => void;
+  onLogin: (payload: { email: string; password: string }) => void | Promise<void>;
   onRegister: () => void;
   onForgot: () => void;
 }
@@ -13,10 +13,17 @@ export const LoginScreen = ({ onLogin, onRegister, onForgot }: LoginScreenProps)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await onLogin({ email, password });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -79,6 +86,7 @@ export const LoginScreen = ({ onLogin, onRegister, onForgot }: LoginScreenProps)
 
         <Button
           type="submit"
+          disabled={submitting}
           className="h-12 mt-3 rounded-xl text-base font-semibold shadow-button"
         >
           Войти

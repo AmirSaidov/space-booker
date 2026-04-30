@@ -3,7 +3,7 @@ import { Mail, Lock, User, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  onRegister: () => void;
+  onRegister: (payload: { name: string; email: string; password: string }) => void | Promise<void>;
   onBack: () => void;
 }
 
@@ -12,11 +12,18 @@ export const RegisterScreen = ({ onRegister, onBack }: Props) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) return;
-    onRegister();
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await onRegister({ name, email, password });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -46,7 +53,7 @@ export const RegisterScreen = ({ onRegister, onBack }: Props) => {
           <p className="text-xs text-destructive">Пароли не совпадают</p>
         )}
 
-        <Button type="submit" className="h-12 mt-3 rounded-xl text-base font-semibold shadow-button">
+        <Button type="submit" disabled={submitting} className="h-12 mt-3 rounded-xl text-base font-semibold shadow-button">
           Создать аккаунт
         </Button>
       </form>

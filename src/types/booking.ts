@@ -1,7 +1,8 @@
 export type DeskStatus = "available" | "occupied" | "mine";
 
 export interface Desk {
-  id: number;
+  id: number; // visual number
+  dbId?: number; // backend primary key
   status: DeskStatus;
   // grid position & size for the floor map
   col: number;
@@ -52,6 +53,7 @@ export interface AppNotification {
 }
 
 export interface UserProfile {
+  id?: number;
   name: string;
   email: string;
   position: string;

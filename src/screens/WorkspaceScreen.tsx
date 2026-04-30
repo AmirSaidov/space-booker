@@ -29,7 +29,7 @@ export const WorkspaceScreen = ({
 }: WorkspaceScreenProps) => {
   return (
     <div className="flex-1 flex flex-col bg-background">
-      <header className="px-5 pt-4 pb-3 flex items-center justify-between">
+      <header className="px-5 md:px-8 pt-4 pb-3 flex items-center justify-between">
         <button onClick={onOpenMenu} className="p-1.5 -ml-1.5 text-foreground" aria-label="Меню">
           <Menu className="w-6 h-6" />
         </button>
@@ -48,7 +48,7 @@ export const WorkspaceScreen = ({
         </button>
       </header>
 
-      <div className="px-5">
+      <div className="px-5 md:px-8">
         <button
           onClick={onOpenRooms}
           className="inline-flex items-center gap-1 text-sm font-medium text-foreground py-1"
@@ -58,7 +58,7 @@ export const WorkspaceScreen = ({
         </button>
       </div>
 
-      <div className="flex-1 px-5 pt-3 pb-4">
+      <div className="flex-1 px-5 md:px-8 pt-3 pb-4">
         <FloorMap desks={room.desks} highlightId={myDeskId} onDeskClick={onDeskClick} />
 
         <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
@@ -76,7 +76,7 @@ export const WorkspaceScreen = ({
         </div>
       </div>
 
-      <div className="px-5 pb-3">
+      <div className="px-5 md:px-8 pb-3">
         <Button
           onClick={onScan}
           className="w-full h-12 rounded-xl text-base font-semibold shadow-button gap-2"

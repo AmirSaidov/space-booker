@@ -33,7 +33,7 @@ export const SideMenu = ({ open, user, onClose, onNavigate, onOpenNotifications,
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="px-5 pt-5 pb-4 border-b border-border flex items-start justify-between">
+        <div className="px-5 md:px-6 pt-5 pb-4 border-b border-border flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg">
               {user.name.charAt(0)}
@@ -56,7 +56,7 @@ export const SideMenu = ({ open, user, onClose, onNavigate, onOpenNotifications,
                 onNavigate(key);
                 onClose();
               }}
-              className="w-full flex items-center gap-3 px-5 py-3 hover:bg-secondary text-left"
+              className="w-full flex items-center gap-3 px-5 md:px-6 py-3 hover:bg-secondary text-left"
             >
               <Icon className="w-5 h-5 text-muted-foreground" />
               <span className="text-sm font-medium">{label}</span>
@@ -67,7 +67,7 @@ export const SideMenu = ({ open, user, onClose, onNavigate, onOpenNotifications,
               onOpenNotifications();
               onClose();
             }}
-            className="w-full flex items-center gap-3 px-5 py-3 hover:bg-secondary text-left"
+            className="w-full flex items-center gap-3 px-5 md:px-6 py-3 hover:bg-secondary text-left"
           >
             <Bell className="w-5 h-5 text-muted-foreground" />
             <span className="text-sm font-medium">Уведомления</span>

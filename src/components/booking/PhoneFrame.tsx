@@ -11,8 +11,8 @@ interface PhoneFrameProps {
  */
 export const PhoneFrame = ({ children }: PhoneFrameProps) => {
   return (
-    <div className="min-h-screen w-full bg-secondary flex items-center justify-center sm:p-6">
-      <div className="relative w-full sm:max-w-[420px] sm:rounded-[2.25rem] bg-background sm:shadow-card overflow-hidden min-h-screen sm:min-h-[860px] sm:max-h-[860px] flex flex-col">
+    <div className="min-h-screen w-full bg-black flex items-center justify-center sm:p-6">
+      <div className="relative w-full sm:max-w-[420px] sm:rounded-[2.25rem] bg-background sm:shadow-card sm:ring-1 sm:ring-border overflow-hidden min-h-screen sm:min-h-[860px] sm:max-h-[860px] flex flex-col">
         {/* Status bar (visual only, on sm+) */}
         <div className="hidden sm:flex h-9 px-7 items-center justify-between text-xs font-semibold text-foreground shrink-0">
           <span>9:41</span>

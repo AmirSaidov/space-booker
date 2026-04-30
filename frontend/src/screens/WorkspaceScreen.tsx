@@ -14,6 +14,7 @@ interface WorkspaceScreenProps {
   onOpenNotifications: () => void;
   onOpenRooms: () => void;
   onNavigate: (key: NavKey) => void;
+  isAdmin?: boolean;
 }
 
 export const WorkspaceScreen = ({
@@ -26,6 +27,7 @@ export const WorkspaceScreen = ({
   onOpenNotifications,
   onOpenRooms,
   onNavigate,
+  isAdmin = false,
 }: WorkspaceScreenProps) => {
   return (
     <div className="flex-1 flex flex-col bg-background">
@@ -76,17 +78,19 @@ export const WorkspaceScreen = ({
         </div>
       </div>
 
-      <div className="px-5 md:px-8 pb-3">
-        <Button
-          onClick={onScan}
-          className="w-full h-12 rounded-xl text-base font-semibold shadow-button gap-2"
-        >
-          <ScanLine className="w-5 h-5" />
-          Сканировать QR
-        </Button>
-      </div>
+      {!isAdmin && (
+        <div className="px-5 md:px-8 pb-3">
+          <Button
+            onClick={onScan}
+            className="w-full h-12 rounded-xl text-base font-semibold shadow-button gap-2"
+          >
+            <ScanLine className="w-5 h-5" />
+            Сканировать QR
+          </Button>
+        </div>
+      )}
 
-      <BottomNav active="map" onNavigate={onNavigate} />
+      <BottomNav active="map" isAdmin={isAdmin} onNavigate={onNavigate} />
     </div>
   );
 };

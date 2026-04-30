@@ -7,6 +7,7 @@ class User(AbstractUser):
     # AbstractUser уже содержит: username, password, email, first_name, last_name
     # Нам остается только добавить имя, если username тебе недостаточно
     name = models.CharField(max_length=255, blank=True) 
+    preferred_room = models.ForeignKey('Room', null=True, blank=True, on_delete=models.SET_NULL)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -55,7 +56,7 @@ class OccupancyHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='booking_history')
     place = models.ForeignKey(Place, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField(auto_now_add=True) # Время выхода
+    end_time = models.DateTimeField(null=True, blank=True) # Время выхода
     duration_minutes = models.IntegerField(default=0) # Итоговое время для рейтинга
 
     def save(self, *args, **kwargs):

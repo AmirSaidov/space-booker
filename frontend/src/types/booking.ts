@@ -9,6 +9,8 @@ export interface Desk {
   row: number;
   w?: number;
   h?: number;
+  occupiedAt?: string;
+  occupantName?: string;
 }
 
 export interface Room {
@@ -30,7 +32,9 @@ export type Screen =
   | "history"
   | "profile"
   | "notifications"
-  | "rooms";
+  | "rooms"
+  | "admin_users"
+  | "admin_history";
 
 export interface Booking {
   id: string;
@@ -58,4 +62,6 @@ export interface UserProfile {
   email: string;
   position: string;
   department: string;
+  preferred_room?: string;
+  is_staff?: boolean;
 }

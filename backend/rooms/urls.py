@@ -13,6 +13,9 @@ from .views import (
     RoomPlacesView,
     UserProfileView,
     UserHistoryView,
+    GlobalHistoryView,
+    AdminUserListView,
+    AdminHistoryView,
 )
 
 
@@ -28,5 +31,8 @@ urlpatterns = [
     path('places/<int:place_id>/leave', LeavePlaceView.as_view(), name='place-leave'),
     path('places/<int:place_id>/history', PlaceHistoryView.as_view(), name='place-history'),
     path('auth/history', UserHistoryView.as_view(), name='user-history'),
+    path('history/recent', GlobalHistoryView.as_view(), name='recent-history'),
     path('leaderboard', LeaderboardView.as_view(), name='leaderboard'),
+    path('admin/users', AdminUserListView.as_view(), name='admin-users'),
+    path('admin/history', AdminHistoryView.as_view(), name='admin-history'),
 ]

@@ -33,17 +33,10 @@ export const QrScanner = ({ onDecode, onError }: QrScannerProps) => {
             qrbox: { width: 260, height: 260 },
             aspectRatio: 1,
           },
-          async (decodedText) => {
+          (decodedText) => {
             if (decodedOnceRef.current) return;
             decodedOnceRef.current = true;
-            try {
-              if (qr.isScanning) {
-                await qr.stop();
-              }
-              qr.clear();
-            } catch {
-              // ignore
-            }
+
             if (!cancelled) onDecode(decodedText);
           },
           () => {
@@ -66,14 +59,14 @@ export const QrScanner = ({ onDecode, onError }: QrScannerProps) => {
       const active = qrRef.current;
       qrRef.current = null;
       if (!active) return;
-      try {
-        const stopPromise = active.stop();
-        if (stopPromise) {
-          stopPromise.catch(() => {}).finally(() => {
-            try { active.clear(); } catch {}
-          });
-        }
-      } catch (err) {
+      
+      if (active.isScanning) {
+        active.stop().then(() => {
+          try { active.clear(); } catch {}
+        }).catch(() => {
+          try { active.clear(); } catch {}
+        });
+      } else {
         try { active.clear(); } catch {}
       }
     };

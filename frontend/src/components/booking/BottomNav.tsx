@@ -1,20 +1,27 @@
-import { Map, Calendar, Clock, User } from "lucide-react";
+import { Map, Calendar, Clock, User, Users } from "lucide-react";
 
-export type NavKey = "map" | "bookings" | "history" | "profile";
+export type NavKey = "map" | "bookings" | "history" | "profile" | "admin_users" | "admin_history";
 
 interface BottomNavProps {
   active?: NavKey;
+  isAdmin?: boolean;
   onNavigate?: (key: NavKey) => void;
 }
 
-const items = [
-  { key: "map", label: "Карта", icon: Map },
-  { key: "bookings", label: "Мои брони", icon: Calendar },
-  { key: "history", label: "История", icon: Clock },
-  { key: "profile", label: "Профиль", icon: User },
-] as const;
-
-export const BottomNav = ({ active = "map", onNavigate }: BottomNavProps) => {
+export const BottomNav = ({ active = "map", isAdmin = false, onNavigate }: BottomNavProps) => {
+  const items = isAdmin
+    ? [
+        { key: "map" as NavKey, label: "Карта", icon: Map },
+        { key: "admin_users" as NavKey, label: "Пользователи", icon: Users },
+        { key: "admin_history" as NavKey, label: "История", icon: Clock },
+        { key: "profile" as NavKey, label: "Профиль", icon: User },
+      ]
+    : [
+        { key: "map" as NavKey, label: "Карта", icon: Map },
+        { key: "bookings" as NavKey, label: "Мои брони", icon: Calendar },
+        { key: "history" as NavKey, label: "История", icon: Clock },
+        { key: "profile" as NavKey, label: "Профиль", icon: User },
+      ];
   return (
     <nav className="border-t border-border bg-background px-2 pt-2 pb-3">
       <ul className="flex items-center justify-around">

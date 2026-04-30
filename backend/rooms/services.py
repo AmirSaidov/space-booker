@@ -15,13 +15,16 @@ def release_place(place_id):
             return None, None, "Place is already free"
 
         history = None
-        if place.user and place.occupied_at:
-            history = OccupancyHistory.objects.create(
+        if place.user:
+            history = OccupancyHistory.objects.filter(
                 user=place.user,
                 place=place,
-                start_time=place.occupied_at,
-                end_time=timezone.now(),
-            )
+                end_time__isnull=True
+            ).last()
+            
+            if history:
+                history.end_time = timezone.now()
+                history.save()
 
         place.user = None
         place.status = 'free'
@@ -55,6 +58,12 @@ def occupy_specific_place(user_id, place_id, qr_code=None):
         place.occupied_at = timezone.now()
         place.save()
 
+        OccupancyHistory.objects.create(
+            user=user,
+            place=place,
+            start_time=place.occupied_at,
+        )
+
         return place, None
 
 
@@ -87,6 +96,12 @@ def occupy_place_in_room(user_id, qr_code):
             place.status = 'occupied'
             place.occupied_at = timezone.now()
             place.save()
+
+            OccupancyHistory.objects.create(
+                user_id=user_id,
+                place=place,
+                start_time=place.occupied_at,
+            )
 
             return place, None
 

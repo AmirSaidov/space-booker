@@ -72,6 +72,13 @@ export async function apiJson<T>(
       payload?.error ||
       payload?.detail ||
       (typeof body === "string" && body ? body : `Request failed: ${res.status}`);
+    
+    // If 401 Unauthorized, clear token and broadcast event so the app can redirect to login
+    if (res.status === 401) {
+      setAuthToken(null);
+      window.dispatchEvent(new CustomEvent("auth:unauthorized"));
+    }
+    
     throw new ApiError(msg, res.status, payload);
   }
 

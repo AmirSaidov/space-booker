@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -91,6 +91,13 @@ class UserProfileView(APIView):
 
     def get(self, request):
         return Response(UserSerializer(request.user).data)
+
+    def patch(self, request):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
 
 
 class LeaderboardView(APIView):
@@ -221,3 +228,65 @@ class UserHistoryView(APIView):
         if error:
             return Response({"success": False, "message": error}, status=400)
         return Response(OccupancyHistorySerializer(history, many=True).data)
+
+    def delete(self, request):
+        OccupancyHistory.objects.filter(user=request.user).delete()
+        return Response({"success": True, "message": "History cleared"})
+
+
+class GlobalHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        history = (
+            OccupancyHistory.objects.all()
+            .select_related('user', 'place', 'place__room')
+            .order_by('-start_time')[:50]
+        )
+        return Response(OccupancyHistorySerializer(history, many=True).data)
+
+class AdminUserListView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        from django.db.models import Prefetch
+        users = User.objects.prefetch_related(
+            Prefetch('place_set', queryset=Place.objects.filter(status='occupied'), to_attr='active_places')
+        )
+        
+        data = []
+        for user in users:
+            place = user.active_places[0] if user.active_places else None
+            data.append({
+                "id": user.id,
+                "name": getattr(user, 'name', '') or user.get_full_name() or user.username,
+                "email": user.email,
+                "is_staff": user.is_staff,
+                "place": {
+                    "id": place.id,
+                    "number": place.number,
+                    "room_name": place.room.name,
+                    "occupied_at": place.occupied_at,
+                } if place else None
+            })
+        return Response(data)
+
+class AdminHistoryView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        history = (
+            OccupancyHistory.objects.all()
+            .select_related('user', 'place', 'place__room')
+            .order_by('-start_time')
+        )
+        history, error = apply_history_filters(history, request.query_params)
+        if error:
+            return Response({"success": False, "message": error}, status=400)
+        
+        from rest_framework.pagination import PageNumberPagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 50
+        result_page = paginator.paginate_queryset(history, request)
+        serializer = OccupancyHistorySerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)

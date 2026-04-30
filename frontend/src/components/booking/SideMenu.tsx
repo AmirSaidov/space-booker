@@ -72,6 +72,35 @@ export const SideMenu = ({ open, user, onClose, onNavigate, onOpenNotifications,
             <Bell className="w-5 h-5 text-muted-foreground" />
             <span className="text-sm font-medium">Уведомления</span>
           </button>
+          
+          {user.is_staff && (
+            <>
+              <div className="mx-5 md:mx-6 my-2 h-px bg-border" />
+              <div className="px-5 md:px-6 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Администрирование
+              </div>
+              <button
+                onClick={() => {
+                  onNavigate("admin_users" as NavKey);
+                  onClose();
+                }}
+                className="w-full flex items-center gap-3 px-5 md:px-6 py-3 hover:bg-secondary text-left"
+              >
+                <User className="w-5 h-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Пользователи</span>
+              </button>
+              <button
+                onClick={() => {
+                  onNavigate("admin_history" as NavKey);
+                  onClose();
+                }}
+                className="w-full flex items-center gap-3 px-5 md:px-6 py-3 hover:bg-secondary text-left"
+              >
+                <Clock className="w-5 h-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Полная история</span>
+              </button>
+            </>
+          )}
         </nav>
 
         <button

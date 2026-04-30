@@ -8,45 +8,46 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 25% 12%;
+    /* Total Black theme — deep blacks, soft grey surfaces, white accents */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 25% 12%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 25% 12%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 222 89% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-soft: 222 89% 96%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 6%;
+    --primary-soft: 0 0% 14%;
 
-    --secondary: 220 20% 97%;
-    --secondary-foreground: 222 25% 18%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 92%;
 
-    --muted: 220 20% 96%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 222 89% 96%;
-    --accent-foreground: 222 89% 45%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 0 0% 98%;
 
-    --success: 145 65% 45%;
-    --success-foreground: 0 0% 100%;
-    --success-soft: 145 60% 94%;
+    --success: 145 55% 55%;
+    --success-foreground: 0 0% 6%;
+    --success-soft: 145 30% 14%;
 
-    --destructive: 0 75% 58%;
+    --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-soft: 0 80% 96%;
+    --destructive-soft: 0 40% 16%;
 
-    --border: 220 16% 92%;
-    --input: 220 16% 92%;
-    --ring: 222 89% 55%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 0 0% 80%;
 
     --radius: 0.875rem;
 
-    --shadow-card: 0 4px 20px -8px hsl(222 30% 20% / 0.08);
-    --shadow-soft: 0 2px 12px -4px hsl(222 30% 20% / 0.06);
-    --shadow-button: 0 4px 14px -4px hsl(222 89% 55% / 0.35);
+    --shadow-card: 0 4px 20px -8px hsl(0 0% 0% / 0.6);
+    --shadow-soft: 0 2px 12px -4px hsl(0 0% 0% / 0.5);
+    --shadow-button: 0 4px 14px -4px hsl(0 0% 0% / 0.55);
 
     --sidebar-background: 0 0% 98%;
 

@@ -29,22 +29,45 @@ import {
 
 const initialRooms: Room[] = [
   {
+    id: "401",
+    name: "Кабинет 401",
+    floor: 4,
+    desks: [
+      // Top row — 4 horizontal desks
+      { id: 1, status: "available", col: 2, row: 1, w: 2 },
+      { id: 2, status: "available", col: 4, row: 1, w: 2 },
+      { id: 3, status: "available", col: 6, row: 1, w: 2 },
+      { id: 4, status: "available", col: 8, row: 1, w: 2 },
+      // Left column — 2 vertical desks
+      { id: 5, status: "available", col: 1, row: 3, h: 2 },
+      { id: 6, status: "available", col: 1, row: 5, h: 2 },
+      // Right column — 3 vertical desks
+      { id: 7, status: "available", col: 10, row: 3, h: 2 },
+      { id: 8, status: "available", col: 10, row: 5, h: 2 },
+      { id: 9, status: "available", col: 10, row: 7, h: 2 },
+    ],
+  },
+  {
     id: "407",
     name: "Кабинет 407",
     floor: 4,
     desks: [
-      { id: 1, status: "available", col: 1, row: 1, h: 2 },
+      // Top row — 1 small portrait + 3 wide desks
+      { id: 1, status: "available", col: 2, row: 1, h: 2 },
       { id: 2, status: "available", col: 3, row: 1, w: 2 },
       { id: 3, status: "available", col: 5, row: 1, w: 2 },
-      { id: 4, status: "available", col: 1, row: 3, h: 2 },
-      { id: 7, status: "available", col: 3, row: 3, w: 2 },
-      { id: 8, status: "available", col: 5, row: 3 },
-      { id: 10, status: "available", col: 6, row: 4, h: 2 },
-      { id: 5, status: "available", col: 1, row: 5, h: 2 },
-      { id: 9, status: "available", col: 3, row: 5, w: 2 },
-      { id: 11, status: "available", col: 5, row: 5 },
-      { id: 6, status: "available", col: 2, row: 7, w: 2 },
-      { id: 12, status: "available", col: 5, row: 6, w: 2 },
+      { id: 4, status: "available", col: 7, row: 1, w: 2 },
+      // Left column — 2 portrait + 1 landscape at bottom
+      { id: 5, status: "available", col: 1, row: 3, h: 2 },
+      { id: 6, status: "available", col: 1, row: 5, h: 2 },
+      { id: 7, status: "available", col: 1, row: 7, w: 2 },
+      // Center — 1 portrait + 1 landscape
+      { id: 8, status: "available", col: 5, row: 3, h: 2 },
+      { id: 9, status: "available", col: 4, row: 5, w: 2 },
+      // Right column — 3 desks
+      { id: 10, status: "available", col: 9, row: 3, h: 2 },
+      { id: 11, status: "available", col: 9, row: 5, h: 2 },
+      { id: 12, status: "available", col: 9, row: 7, h: 2 },
     ],
   },
   {
@@ -415,7 +438,6 @@ const Index = () => {
         x.id === id ? { ...x, status: "cancelled", endTime: nowHM() } : x
       )
     );
-    if (id === myBookingId) setMyBookingId(null);
     toast.success("Бронь отменена");
   };
 

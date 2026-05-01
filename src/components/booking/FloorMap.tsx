@@ -13,6 +13,7 @@ const STATUS_DOT: Record<Desk["status"], string> = {
 };
 
 export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => {
+  const maxCol = desks.reduce((m, d) => Math.max(m, d.col + (d.w ?? 1) - 1), 6);
   return (
     <div
       className="relative w-full bg-background border border-border rounded-2xl p-3 sm:p-4 md:p-6"
@@ -25,7 +26,7 @@ export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => 
       <div
         className="grid gap-2 sm:gap-3"
         style={{
-          gridTemplateColumns: "repeat(6, 1fr)",
+          gridTemplateColumns: `repeat(${maxCol}, 1fr)`,
           gridAutoRows: "clamp(44px, 5.2vw, 68px)",
         }}
       >
@@ -36,13 +37,12 @@ export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => 
               key={d.id}
               type="button"
               onClick={() => onDeskClick?.(d)}
-              className={`relative rounded-md border flex items-center justify-center text-sm font-semibold transition-all active:scale-95 ${
-                isMine
+              className={`relative rounded-md border flex items-center justify-center text-sm font-semibold transition-all active:scale-95 ${isMine
                   ? "bg-success border-success text-success-foreground shadow-soft"
                   : d.status === "occupied"
-                  ? "bg-destructive-soft border-destructive/40 text-foreground"
-                  : "bg-background border-foreground/30 text-foreground hover:border-primary"
-              }`}
+                    ? "bg-destructive-soft border-destructive/40 text-foreground"
+                    : "bg-background border-foreground/30 text-foreground hover:border-primary"
+                }`}
               style={{
                 gridColumn: `${d.col} / span ${d.w ?? 1}`,
                 gridRow: `${d.row} / span ${d.h ?? 1}`,

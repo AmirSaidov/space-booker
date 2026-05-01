@@ -17,7 +17,7 @@ import { NotificationsScreen } from "@/screens/NotificationsScreen";
 import { RoomsScreen } from "@/screens/RoomsScreen";
 import { NavKey } from "@/components/booking/BottomNav";
 import { ScannerModal } from "@/components/qr/ScannerModal";
-import { login, register, getUserProfile, updateUserProfile, fetchUserHistory, fetchGlobalHistory, clearUserHistory } from "@/lib/auth";
+import { login, register, getUserProfile, updateUserProfile, fetchUserHistory, fetchGlobalHistory, clearUserHistory, logout } from "@/lib/auth";
 import { occupyPlace, fetchRoomPlaces, fetchRooms, releasePlace } from "@/lib/places";
 import { getAuthToken } from "@/lib/api";
 import {
@@ -507,6 +507,7 @@ const Index = () => {
 
   const handleLogout = () => {
     // Reset user state so next person doesn't see stale is_staff
+    logout();
     setUser(initialUser);
     setBookings([]);
     setNotifications([]);

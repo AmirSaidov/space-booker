@@ -17,6 +17,10 @@ export async function login(email: string, password: string) {
   return data;
 }
 
+export function logout() {
+  setAuthToken(null);
+}
+
 export async function register(name: string, email: string, password: string) {
   const data = await apiJson<AuthResponse>("/api/auth/register", {
     method: "POST",

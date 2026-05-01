@@ -1,4 +1,3 @@
-import { useRef, useEffect, useState, useCallback } from "react";
 import { Desk } from "@/types/booking";
 
 interface FloorMapProps {
@@ -13,58 +12,31 @@ const STATUS_DOT: Record<Desk["status"], string> = {
   mine: "bg-success",
 };
 
-/** Minimum comfortable column width in px */
-const MIN_COL_PX = 52;
-const GAP_PX = 10;
-const ROW_HEIGHT_PX = 56;
-const INNER_PAD = 14; // p-3.5 ≈ 14px
-
 export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => {
   const maxCol = desks.reduce((m, d) => Math.max(m, d.col + (d.w ?? 1) - 1), 6);
   const maxRow = desks.reduce((m, d) => Math.max(m, d.row + (d.h ?? 1) - 1), 1);
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-
-  // The natural (unscaled) width the grid wants
-  const naturalGridW = maxCol * MIN_COL_PX + (maxCol - 1) * GAP_PX;
-  const naturalW = naturalGridW + INNER_PAD * 2;
-  const naturalGridH = maxRow * ROW_HEIGHT_PX + (maxRow - 1) * GAP_PX;
-  const naturalH = naturalGridH + INNER_PAD * 2;
-
-  const recalc = useCallback(() => {
-    if (!wrapperRef.current) return;
-    const avail = wrapperRef.current.clientWidth;
-    setScale(avail >= naturalW ? 1 : avail / naturalW);
-  }, [naturalW]);
-
-  useEffect(() => {
-    recalc();
-    const ro = new ResizeObserver(recalc);
-    if (wrapperRef.current) ro.observe(wrapperRef.current);
-    return () => ro.disconnect();
-  }, [recalc]);
-
   return (
-    <div ref={wrapperRef} className="w-full" style={{ height: naturalH * scale }}>
-      <div
-        className="relative bg-background border border-border rounded-2xl origin-top-left"
-        style={{
-          width: naturalW,
-          height: naturalH,
-          padding: INNER_PAD,
-          transform: scale < 1 ? `scale(${scale})` : undefined,
-          backgroundImage:
-            "linear-gradient(hsl(var(--border)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border)) 1px, transparent 1px)",
-          backgroundSize: `${Math.round(naturalW / maxCol)}px ${Math.round(naturalH / maxRow)}px`,
-        }}
-      >
-        <div
-          className="grid"
+    <div className="w-full flex justify-center py-2">
+      <div className="w-full max-w-[640px] bg-[#080808] border border-white/5 rounded-3xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+        {/* Subtle background grid texture */}
+        <div 
+          className="absolute inset-0 opacity-[0.05] pointer-events-none"
           style={{
-            gridTemplateColumns: `repeat(${maxCol}, ${MIN_COL_PX}px)`,
-            gridAutoRows: ROW_HEIGHT_PX,
-            gap: GAP_PX,
+            backgroundImage: `
+              linear-gradient(to right, white 1px, transparent 1px),
+              linear-gradient(to bottom, white 1px, transparent 1px)
+            `,
+            backgroundSize: '24px 24px'
+          }}
+        />
+        
+        <div
+          className="relative grid w-full gap-2 sm:gap-3"
+          style={{
+            aspectRatio: `${maxCol} / ${maxRow * 1.1}`,
+            gridTemplateColumns: `repeat(${maxCol}, 1fr)`,
+            gridTemplateRows: `repeat(${maxRow}, 1fr)`,
           }}
         >
           {desks.map((d) => {
@@ -74,13 +46,17 @@ export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => 
                 key={d.id}
                 type="button"
                 onClick={() => onDeskClick?.(d)}
-                className={`relative rounded-md border flex items-center justify-center text-sm font-semibold transition-all active:scale-95 ${
-                  isMine
-                    ? "bg-success border-success text-success-foreground shadow-soft"
+                className={`
+                  relative rounded-xl border transition-all duration-300
+                  flex items-center justify-center text-xs sm:text-sm font-bold
+                  active:scale-95 hover:scale-[1.02]
+                  ${isMine 
+                    ? "bg-success border-success text-black shadow-[0_0_20px_rgba(34,197,94,0.3)]" 
                     : d.status === "occupied"
-                      ? "bg-destructive-soft border-destructive/40 text-foreground"
-                      : "bg-background border-foreground/30 text-foreground hover:border-primary"
-                }`}
+                      ? "bg-destructive/10 border-destructive/20 text-white/20"
+                      : "bg-[#111] border-white/10 text-white hover:border-white/30 hover:bg-[#161616]"
+                  }
+                `}
                 style={{
                   gridColumn: `${d.col} / span ${d.w ?? 1}`,
                   gridRow: `${d.row} / span ${d.h ?? 1}`,
@@ -89,7 +65,7 @@ export const FloorMap = ({ desks, highlightId, onDeskClick }: FloorMapProps) => 
                 {d.id}
                 {!isMine && (
                   <span
-                    className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ring-2 ring-background ${STATUS_DOT[d.status]}`}
+                    className={`absolute top-1 right-1 w-1.5 h-1.5 rounded-full ring-2 ring-[#111] ${STATUS_DOT[d.status]}`}
                   />
                 )}
               </button>

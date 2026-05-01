@@ -10,12 +10,14 @@ import { DetailsScreen } from "@/screens/DetailsScreen";
 import { SuccessScreen } from "@/screens/SuccessScreen";
 import { BookingsScreen } from "@/screens/BookingsScreen";
 import { HistoryScreen } from "@/screens/HistoryScreen";
+import { AdminUsersScreen } from "@/screens/AdminUsersScreen";
+import { AdminHistoryScreen } from "@/screens/AdminHistoryScreen";
 import { ProfileScreen } from "@/screens/ProfileScreen";
 import { NotificationsScreen } from "@/screens/NotificationsScreen";
 import { RoomsScreen } from "@/screens/RoomsScreen";
 import { NavKey } from "@/components/booking/BottomNav";
 import { ScannerModal } from "@/components/qr/ScannerModal";
-import { login, register, getUserProfile, fetchUserHistory } from "@/lib/auth";
+import { login, register, getUserProfile, updateUserProfile, fetchUserHistory, fetchGlobalHistory, clearUserHistory } from "@/lib/auth";
 import { occupyPlace, fetchRoomPlaces, fetchRooms, releasePlace } from "@/lib/places";
 import { getAuthToken } from "@/lib/api";
 import {
@@ -104,22 +106,7 @@ const initialUser: UserProfile = {
   department: "Команда продукта",
 };
 
-const initialNotifications: AppNotification[] = [
-  {
-    id: "n1",
-    title: "Бронь на завтра",
-    text: "Не забудьте — стол 7, кабинет 407 в 09:30.",
-    time: "Сейчас",
-    read: false,
-  },
-  {
-    id: "n2",
-    title: "Новый этаж доступен",
-    text: "Кабинеты 2 этажа теперь можно бронировать.",
-    time: "Вчера",
-    read: false,
-  },
-];
+
 
 const today = () => new Date().toISOString().slice(0, 10);
 const nowHM = () => {
@@ -137,7 +124,7 @@ const Index = () => {
   const [scanDeskTarget, setScanDeskTarget] = useState<number | null>(null);
   const [deskQrValues, setDeskQrValues] = useState<Record<number, string>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [user, setUser] = useState<UserProfile>(initialUser);
   const [menuOpen, setMenuOpen] = useState(false);
   const [bookingTime, setBookingTime] = useState<string>("");
@@ -160,12 +147,27 @@ const Index = () => {
     [room, scannedDeskId]
   );
 
+  // Global 401 handler: if any API call gets 401, force logout
+  useEffect(() => {
+    const handler = () => {
+      setUser(initialUser);
+      setBookings([]);
+      setNotifications([]);
+      setScreen("login");
+    };
+    window.addEventListener("auth:unauthorized", handler);
+    return () => window.removeEventListener("auth:unauthorized", handler);
+  }, []);
+
   useEffect(() => {
     if (screen === "workspace" || screen === "profile") {
       getUserProfile()
         .then((data) => {
           if (data && data.email) {
             setUser((prev) => ({ ...prev, ...data }));
+            if (data.preferred_room) {
+              setCurrentRoomId(String(data.preferred_room));
+            }
           }
         })
         .catch(() => {});
@@ -214,14 +216,33 @@ const Index = () => {
                 };
               });
               if (!currentRoomId && updatedRooms.length > 0) {
-                setCurrentRoomId(updatedRooms[0].id);
+                // Delay setting default room so user profile has a chance to set it first
+                setTimeout(() => {
+                  setCurrentRoomId((prev) => prev || updatedRooms[0].id);
+                }, 100);
               }
               return updatedRooms;
             });
           }
         })
         .catch(() => {});
+        
+      fetchGlobalHistory()
+        .then((history) => {
+          if (Array.isArray(history)) {
+            const mappedNotifs: AppNotification[] = history.map((h: any) => ({
+              id: `h_${h.id}`,
+              title: h.user?.name || h.user?.username || "Неизвестный",
+              text: `Забронировал стол ${h.place_number} в ${h.room_name}`,
+              time: new Date(h.start_time).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+              read: false,
+            }));
+            setNotifications(mappedNotifs);
+          }
+        })
+        .catch(() => {});
     }
+
   }, [screen]);
 
   useEffect(() => {
@@ -250,7 +271,13 @@ const Index = () => {
                   if (p.status === "booked" || p.backend_status === "occupied") {
                     st = p.user?.id === user?.id ? "mine" : "occupied";
                   }
-                  return { ...desk, dbId: p.id, status: st };
+                  return { 
+                    ...desk, 
+                    dbId: p.id, 
+                    status: st,
+                    occupiedAt: p.occupied_at,
+                    occupantName: p.user?.name || p.user_name || undefined
+                  };
                 }
                 return desk;
               });
@@ -451,9 +478,38 @@ const Index = () => {
     if (key === "bookings") setScreen("bookings");
     if (key === "history") setScreen("history");
     if (key === "profile") setScreen("profile");
+    if (key === "admin_users") setScreen("admin_users");
+    if (key === "admin_history") setScreen("admin_history");
+  };
+
+  const handleUpdateProfile = async (data: Partial<UserProfile>) => {
+    try {
+      const updated = await updateUserProfile(data);
+      setUser(prev => ({ ...prev, ...updated }));
+      if (updated.preferred_room) {
+        setCurrentRoomId(String(updated.preferred_room));
+      }
+      toast.success("Настройки сохранены");
+    } catch (e) {
+      toast.error("Не удалось обновить профиль");
+    }
+  };
+
+  const handleClearHistory = async () => {
+    try {
+      await clearUserHistory();
+      setBookings([]);
+      toast.success("История очищена");
+    } catch (e) {
+      toast.error("Ошибка очистки истории");
+    }
   };
 
   const handleLogout = () => {
+    // Reset user state so next person doesn't see stale is_staff
+    setUser(initialUser);
+    setBookings([]);
+    setNotifications([]);
     setScreen("login");
     toast.success("Вы вышли из аккаунта");
   };
@@ -467,6 +523,11 @@ const Index = () => {
           onLogin={async ({ email, password }) => {
             try {
               await login(email, password);
+              // Fetch fresh profile so is_staff is correct for this account
+              try {
+                const profile = await getUserProfile();
+                setUser((prev) => ({ ...prev, ...profile }));
+              } catch {}
               setScreen("workspace");
             } catch (e) {
               const msg = e instanceof Error ? e.message : "Не удалось войти";
@@ -482,6 +543,12 @@ const Index = () => {
           onRegister={async ({ name, email, password }) => {
             try {
               await register(name, email, password);
+              // After registration, log in automatically and load fresh profile
+              await login(email, password);
+              try {
+                const profile = await getUserProfile();
+                setUser({ ...initialUser, ...profile });
+              } catch {}
               setScreen("workspace");
             } catch (e) {
               const msg = e instanceof Error ? e.message : "Не удалось зарегистрироваться";
@@ -505,6 +572,7 @@ const Index = () => {
           onOpenNotifications={() => setScreen("notifications")}
           onOpenRooms={() => setScreen("rooms")}
           onNavigate={handleNavigate}
+          isAdmin={user?.is_staff}
         />
       )}
       {screen === "details" && scannedDesk && (
@@ -516,6 +584,7 @@ const Index = () => {
           onRelease={handleRelease}
           onScanQr={() => openDeskScanner(scannedDesk.id)}
           scannedQrValue={deskQrValues[scannedDesk.id] ?? null}
+          isAdmin={user?.is_staff}
         />
       )}
       {screen === "success" && scannedDesk && (
@@ -536,14 +605,23 @@ const Index = () => {
         />
       )}
       {screen === "history" && (
-        <HistoryScreen bookings={bookings} onNavigate={handleNavigate} />
+        <HistoryScreen bookings={bookings} isAdmin={user?.is_staff} onNavigate={handleNavigate} onClearHistory={handleClearHistory} />
+      )}
+      {screen === "admin_users" && (
+        <AdminUsersScreen onBack={() => setScreen("workspace")} />
+      )}
+      {screen === "admin_history" && (
+        <AdminHistoryScreen onBack={() => setScreen("workspace")} />
       )}
       {screen === "profile" && (
         <ProfileScreen
           user={user}
+          rooms={rooms}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
           onOpenNotifications={() => setScreen("notifications")}
+          onUpdateProfile={handleUpdateProfile}
+          isAdmin={user?.is_staff}
         />
       )}
       {screen === "notifications" && (

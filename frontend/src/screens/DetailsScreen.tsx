@@ -11,6 +11,7 @@ interface DetailsScreenProps {
   onRelease: () => void;
   onScanQr: () => void;
   scannedQrValue: string | null;
+  isAdmin?: boolean;
 }
 
 export const DetailsScreen = ({
@@ -21,9 +22,15 @@ export const DetailsScreen = ({
   onRelease,
   onScanQr,
   scannedQrValue,
+  isAdmin = false,
 }: DetailsScreenProps) => {
   const isAvailable = desk.status === "available";
   const isMine = desk.status === "mine";
+
+  // Calculate elapsed time if occupiedAt is present
+  const occupiedMinutes = desk.occupiedAt
+    ? Math.floor((new Date().getTime() - new Date(desk.occupiedAt).getTime()) / 60000)
+    : 0;
 
   return (
     <div className="flex-1 flex flex-col bg-background">
@@ -53,27 +60,18 @@ export const DetailsScreen = ({
                 {room.name.replace("Кабинет ", "")}
               </dd>
             </div>
-            
+
           </dl>
 
-          <div className="mt-6 rounded-xl border border-border bg-muted/40 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-xs text-muted-foreground">Проверка по QR (пока без бэкенда)</p>
-                <p className="mt-1 text-sm break-words">
-                  {scannedQrValue ? scannedQrValue : <span className="text-muted-foreground">QR не сканировали</span>}
-                </p>
-              </div>
-              <Button onClick={onScanQr} variant="outline" className="shrink-0 h-9 rounded-lg px-3">
-                Сканировать
-              </Button>
-            </div>
-          </div>
-
+          {/* Occupied by someone else — show occupant info */}
           {!isAvailable && !isMine && (
-            <p className="mt-6 text-sm text-muted-foreground">
-              Это место уже занято другим сотрудником.
-            </p>
+            <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4">
+              <h3 className="text-xs font-semibold text-primary mb-1 uppercase tracking-wider">Занят сотрудником</h3>
+              <p className="text-base font-bold">{desk.occupantName || "Неизвестный"}</p>
+              {occupiedMinutes > 0 && (
+                <p className="text-sm text-muted-foreground mt-1">Сидит: {occupiedMinutes} мин</p>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -88,13 +86,15 @@ export const DetailsScreen = ({
             Освободить
           </Button>
         ) : (
-          <Button
-            onClick={onBook}
-            disabled={!isAvailable}
-            className="h-12 rounded-xl text-base font-semibold shadow-button"
-          >
-            Забронировать
-          </Button>
+          !isAdmin ? (
+            <Button
+              onClick={onBook}
+              disabled={!isAvailable}
+              className="h-12 rounded-xl text-base font-semibold shadow-button"
+            >
+              Забронировать
+            </Button>
+          ) : null
         )}
         <Button
           onClick={onBack}

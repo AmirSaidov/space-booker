@@ -16,6 +16,7 @@ from .views import (
     GlobalHistoryView,
     AdminUserListView,
     AdminHistoryView,
+    AdminActiveBookingsView,
 )
 
 
@@ -34,5 +35,6 @@ urlpatterns = [
     path('history/recent', GlobalHistoryView.as_view(), name='recent-history'),
     path('leaderboard', LeaderboardView.as_view(), name='leaderboard'),
     path('admin/users', AdminUserListView.as_view(), name='admin-users'),
+    path('admin/active-bookings', AdminActiveBookingsView.as_view(), name='admin-active-bookings'),
     path('admin/history', AdminHistoryView.as_view(), name='admin-history'),
 ]

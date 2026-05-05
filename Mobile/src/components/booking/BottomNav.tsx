@@ -2,7 +2,14 @@ import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
 import { Map, Calendar, Clock, User, Users } from 'lucide-react-native';
 
-export type NavKey = "map" | "bookings" | "history" | "profile" | "admin_users" | "admin_history";
+export type NavKey =
+  | "map"
+  | "bookings"
+  | "history"
+  | "profile"
+  | "admin_users"
+  | "admin_active_bookings"
+  | "admin_history";
 
 interface BottomNavProps {
   active?: NavKey;
@@ -15,6 +22,7 @@ export const BottomNav = ({ active = "map", isAdmin = false, onNavigate }: Botto
     ? [
         { key: "map" as NavKey, label: "Карта", icon: Map },
         { key: "admin_users" as NavKey, label: "Пользователи", icon: Users },
+        { key: "admin_active_bookings" as NavKey, label: "Активные", icon: Calendar },
         { key: "admin_history" as NavKey, label: "История", icon: Clock },
         { key: "profile" as NavKey, label: "Профиль", icon: User },
       ]
@@ -61,16 +69,16 @@ const styles = StyleSheet.create({
     borderTopColor: '#27272a',
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   navItem: {
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 12,
+    paddingHorizontal: 6,
     paddingVertical: 6,
   },
   navText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
     color: '#a1a1aa',
   },

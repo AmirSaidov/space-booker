@@ -35,7 +35,14 @@ export const setAuthToken = async (token: string | null) => {
 };
 
 export const apiBaseUrl = () => {
-  return process.env.EXPO_PUBLIC_API_URL || "http://192.168.0.105:8000";
+  const url = process.env.EXPO_PUBLIC_API_URL;
+
+  if (!url) {
+    console.warn("EXPO_PUBLIC_API_URL is not set. Using local fallback.");
+    return "http://127.0.0.1:8000";
+  }
+
+  return url;
 };
 
 const joinUrl = (base: string, path: string) => {

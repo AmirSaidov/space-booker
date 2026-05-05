@@ -290,3 +290,30 @@ class AdminHistoryView(APIView):
         result_page = paginator.paginate_queryset(history, request)
         serializer = OccupancyHistorySerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
+
+class AdminActiveBookingsView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        active = (
+            OccupancyHistory.objects.filter(end_time__isnull=True)
+            .select_related('user', 'place', 'place__room')
+            .order_by('-start_time')
+        )
+
+        data = []
+        for item in active:
+            data.append({
+                "id": item.id,
+                "user_id": item.user.id,
+                "user_name": getattr(item.user, 'name', '') or item.user.username,
+                "user_email": item.user.email,
+                "room_id": item.place.room.id,
+                "room_name": item.place.room.name,
+                "place_id": item.place.id,
+                "place_number": item.place.number,
+                "start_time": item.start_time,
+                "status": "active",
+            })
+
+        return Response(data)

@@ -20,6 +20,10 @@ import { login, register, logout, getUserProfile, updateUserProfile, fetchUserHi
 import { fetchRooms, fetchRoomPlaces, occupyPlace, releasePlace } from '../lib/places';
 import { Room, Desk, UserProfile, Booking } from '../types/booking';
 
+import AdminUsersScreen from './AdminUsersScreen';
+import AdminActiveBookingsScreen from './AdminActiveBookingsScreen';
+import AdminHistoryScreen from './AdminHistoryScreen';
+
 // Fallback desk layouts for known rooms (same as desktop)
 const knownLayouts: Record<string, Desk[]> = {
   "401": [
@@ -55,10 +59,11 @@ export default function IndexScreen() {
   const [currentRoomId, setCurrentRoomId] = useState<string | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
+  const [selectedDeskRoom, setSelectedDeskRoom] = useState<Room | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [scannedQrValue, setScannedQrValue] = useState<string | null>(null);
   const [bookingTime, setBookingTime] = useState<string | null>(null);
-  const [toast, setToast] = useState<{visible: boolean, message: string, type: ToastType}>({visible: false, message: '', type: 'info'});
+  const [toast, setToast] = useState<{ visible: boolean, message: string, type: ToastType }>({ visible: false, message: '', type: 'info' });
 
   const showToast = (message: string, type: ToastType = 'info') => setToast({ visible: true, message, type });
   const hideToast = () => setToast(prev => ({ ...prev, visible: false }));
@@ -166,9 +171,9 @@ export default function IndexScreen() {
               if (p.status === "booked" || p.backend_status === "occupied") {
                 st = p.user?.id === user?.id ? "mine" : "occupied";
               }
-              return { 
-                ...desk, 
-                dbId: p.id, 
+              return {
+                ...desk,
+                dbId: p.id,
                 status: st,
                 occupiedAt: p.occupied_at,
                 occupantName: p.user?.name || p.user_name || undefined,
@@ -232,7 +237,7 @@ export default function IndexScreen() {
 
   const handleNavigate = (key: string) => {
     const targetTab = key === 'map' ? 'workspace' : key;
-    
+
     if (targetTab === 'workspace' && user?.preferred_room) {
       setCurrentRoomId(String(user.preferred_room));
     }
@@ -274,28 +279,30 @@ export default function IndexScreen() {
 
   const handleDeskClick = (desk: Desk) => {
     setSelectedDesk(desk);
+    setSelectedDeskRoom(room ?? null);
     setScannedQrValue(null);
     setScreen('deskDetail');
   };
 
   const handleScan = (data: string) => {
-    // Try to find the desk by exact QR code match in ANY room
     let foundDesk: Desk | null = null;
-    let foundRoomId: string | null = null;
+    let foundRoom: Room | null = null;
 
     for (const r of rooms) {
       const d = r.desks.find(desk => desk.qrCode === data);
       if (d) {
         foundDesk = d;
-        foundRoomId = r.id;
+        foundRoom = r;
         break;
       }
     }
 
-    if (foundDesk && foundRoomId) {
-      setCurrentRoomId(foundRoomId);
+    if (foundDesk && foundRoom) {
+      // ВАЖНО: не меняем currentRoomId.
+      // Иначе выбранный кабинет 407 сбрасывается на кабинет из QR, например 401.
       setSelectedDesk(foundDesk);
-      setScannedQrValue(data); // Save the exact scanned string to send to backend
+      setSelectedDeskRoom(foundRoom);
+      setScannedQrValue(data);
       setScreen('deskDetail');
     } else {
       showToast("Неверный QR-код или стол не найден", "error");
@@ -304,14 +311,17 @@ export default function IndexScreen() {
   };
 
   const handleBookDesk = async () => {
-    if (!selectedDesk || !currentRoomId || !scannedQrValue) return;
+    if (!selectedDesk || !selectedDeskRoom || !scannedQrValue) return;
+
     try {
       await occupyPlace(selectedDesk.dbId || selectedDesk.id, scannedQrValue);
+
       const now = new Date();
       setBookingTime(`${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
-      
-      await loadRoomPlaces(currentRoomId);
+
+      await loadRoomPlaces(selectedDeskRoom.id);
       await loadBookings();
+
       setScreen('success');
       showToast('Место забронировано', 'success');
     } catch (e: any) {
@@ -320,12 +330,16 @@ export default function IndexScreen() {
   };
 
   const handleReleaseDesk = async () => {
-    if (!selectedDesk || !currentRoomId) return;
+    if (!selectedDesk || !selectedDeskRoom) return;
+
     try {
       await releasePlace(selectedDesk.dbId || selectedDesk.id);
-      await loadRoomPlaces(currentRoomId);
+      await loadRoomPlaces(selectedDeskRoom.id);
+
       setScreen('workspace');
       setSelectedDesk(null);
+      setSelectedDeskRoom(null);
+
       showToast('Место освобождено', 'success');
     } catch (e: any) {
       showToast('Не удалось освободить стол', 'error');
@@ -348,7 +362,7 @@ export default function IndexScreen() {
       <View style={styles.content}>
 
         {screen === 'login' && (
-          <LoginScreen 
+          <LoginScreen
             onLogin={async ({ email, password }) => {
               try {
                 const data = await login(email, password);
@@ -366,12 +380,12 @@ export default function IndexScreen() {
               await loadProfile();
               await loadRooms();
               setScreen('workspace');
-            }}             onRegister={() => setScreen('register')}
-            onForgot={() => {}}
+            }} onRegister={() => setScreen('register')}
+            onForgot={() => { }}
           />
         )}
         {screen === 'register' && (
-          <RegisterScreen 
+          <RegisterScreen
             onRegister={async ({ name, email, password }) => {
               try {
                 await register(name, email, password);
@@ -401,7 +415,7 @@ export default function IndexScreen() {
           />
         )}
         {screen === 'workspace' && room && (
-          <WorkspaceScreen 
+          <WorkspaceScreen
             room={room}
             rooms={rooms}
             myDeskId={myDeskId}
@@ -422,11 +436,16 @@ export default function IndexScreen() {
             isAdmin={user?.is_staff}
           />
         )}
-        {screen === 'deskDetail' && selectedDesk && room && (
+        {screen === 'deskDetail' && selectedDesk && selectedDeskRoom && (
           <DeskDetailScreen
             desk={selectedDesk}
-            room={room}
-            onBack={() => { setScreen('workspace'); setSelectedDesk(null); setScannedQrValue(null); }}
+            room={selectedDeskRoom}
+            onBack={() => {
+              setScreen('workspace');
+              setSelectedDesk(null);
+              setSelectedDeskRoom(null);
+              setScannedQrValue(null);
+            }}
             onBook={handleBookDesk}
             onRelease={handleReleaseDesk}
             isAdmin={user?.is_staff}
@@ -439,18 +458,20 @@ export default function IndexScreen() {
             onBack={() => setScreen('workspace')}
           />
         )}
-        {screen === 'success' && selectedDesk && room && (
+        {screen === 'success' && selectedDesk && selectedDeskRoom && (
           <SuccessScreen
             desk={selectedDesk}
-            room={room}
+            room={selectedDeskRoom}
             startTime={bookingTime || '--:--'}
             onRelease={handleReleaseDesk}
-            onHome={() => { 
-              setScreen('workspace'); 
-              setSelectedDesk(null); 
+            onHome={() => {
+              setScreen('workspace');
+              setSelectedDesk(null);
+              setSelectedDeskRoom(null);
               setScannedQrValue(null);
+
               if (user?.preferred_room) {
-                setCurrentRoomId(String(user?.preferred_room));
+                setCurrentRoomId(String(user.preferred_room));
               }
             }}
           />
@@ -493,6 +514,19 @@ export default function IndexScreen() {
             }}
           />
         )}
+
+        {screen === 'admin_users' && user?.is_staff && (
+          <AdminUsersScreen onNavigate={handleNavigate} />
+        )}
+
+        {screen === 'admin_active_bookings' && user?.is_staff && (
+          <AdminActiveBookingsScreen onNavigate={handleNavigate} />
+        )}
+
+        {screen === 'admin_history' && user?.is_staff && (
+          <AdminHistoryScreen onNavigate={handleNavigate} />
+        )}
+
       </View>
       <Toast visible={toast.visible} message={toast.message} type={toast.type} onHide={hideToast} />
     </SafeAreaView>

@@ -124,9 +124,7 @@ const Index = () => {
   const [scanDeskTarget, setScanDeskTarget] = useState<number | null>(null);
   const [deskQrValues, setDeskQrValues] = useState<Record<number, string>>({});
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [user, setUser] = useState<UserProfile>(initialUser);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [bookingTime, setBookingTime] = useState<string>("");
 
   const room = useMemo(
@@ -152,7 +150,6 @@ const Index = () => {
     const handler = () => {
       setUser(initialUser);
       setBookings([]);
-      setNotifications([]);
       setScreen("login");
     };
     window.addEventListener("auth:unauthorized", handler);
@@ -186,6 +183,7 @@ const Index = () => {
                return {
                  id: String(h.id),
                  deskId: h.place_number,
+                 dbId: h.place_id,
                  roomId: String(h.room_id),
                  roomName: h.room_name,
                  floor: 1, // default
@@ -227,20 +225,6 @@ const Index = () => {
         })
         .catch(() => {});
         
-      fetchGlobalHistory()
-        .then((history) => {
-          if (Array.isArray(history)) {
-            const mappedNotifs: AppNotification[] = history.map((h: any) => ({
-              id: `h_${h.id}`,
-              title: h.user?.name || h.user?.username || "Неизвестный",
-              text: `Забронировал стол ${h.place_number} в ${h.room_name}`,
-              time: new Date(h.start_time).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
-              read: false,
-            }));
-            setNotifications(mappedNotifs);
-          }
-        })
-        .catch(() => {});
     }
 
   }, [screen]);
@@ -382,6 +366,7 @@ const Index = () => {
              return {
                id: String(h.id),
                deskId: h.place_number,
+               dbId: h.place_id,
                roomId: String(h.room_id),
                roomName: h.room_name,
                floor: 1,
@@ -432,6 +417,7 @@ const Index = () => {
              return {
                id: String(h.id),
                deskId: h.place_number,
+               dbId: h.place_id,
                roomId: String(h.room_id),
                roomName: h.room_name,
                floor: 1,
@@ -456,16 +442,41 @@ const Index = () => {
     })();
   };
 
-  const handleCancelBooking = (id: string) => {
+  const handleCancelBooking = async (id: string) => {
     const b = bookings.find((x) => x.id === id);
-    if (!b) return;
-    updateDesk(b.roomId, b.deskId, "available");
-    setBookings((all) =>
-      all.map((x) =>
-        x.id === id ? { ...x, status: "cancelled", endTime: nowHM() } : x
-      )
-    );
-    toast.success("Бронь отменена");
+    if (!b || !b.dbId) return;
+
+    try {
+      await releasePlace(b.dbId);
+      updateDesk(b.roomId, b.deskId, "available");
+      
+      const history = await fetchUserHistory();
+      if (Array.isArray(history)) {
+        const mappedBookings: Booking[] = history.map((h: any) => {
+           let st = "completed";
+           if (!h.end_time) st = "active";
+           const sTime = new Date(h.start_time);
+           let eTime;
+           if (h.end_time) eTime = new Date(h.end_time);
+           return {
+             id: String(h.id),
+             deskId: h.place_number,
+             dbId: h.place_id,
+             roomId: String(h.room_id),
+             roomName: h.room_name,
+             floor: 1,
+             date: sTime.toISOString().slice(0, 10),
+             startTime: `${String(sTime.getHours()).padStart(2, "0")}:${String(sTime.getMinutes()).padStart(2, "0")}`,
+             endTime: eTime ? `${String(eTime.getHours()).padStart(2, "0")}:${String(eTime.getMinutes()).padStart(2, "0")}` : undefined,
+             status: st as any,
+           };
+        });
+        setBookings(mappedBookings);
+      }
+      toast.success("Бронь отменена");
+    } catch (e) {
+      toast.error("Не удалось отменить бронь");
+    }
   };
 
   const handleDeskClick = (desk: Desk) => {
@@ -510,12 +521,9 @@ const Index = () => {
     logout();
     setUser(initialUser);
     setBookings([]);
-    setNotifications([]);
     setScreen("login");
     toast.success("Вы вышли из аккаунта");
   };
-
-  const unread = notifications.filter((n) => !n.read).length;
 
   return (
     <PhoneFrame>
@@ -566,11 +574,8 @@ const Index = () => {
         <WorkspaceScreen
           room={room}
           myDeskId={myDeskId}
-          unreadCount={unread}
           onScan={openWorkspaceScanner}
           onDeskClick={handleDeskClick}
-          onOpenMenu={() => setMenuOpen(true)}
-          onOpenNotifications={() => setScreen("notifications")}
           onOpenRooms={() => setScreen("rooms")}
           onNavigate={handleNavigate}
           isAdmin={user?.is_staff}
@@ -620,22 +625,11 @@ const Index = () => {
           rooms={rooms}
           onLogout={handleLogout}
           onNavigate={handleNavigate}
-          onOpenNotifications={() => setScreen("notifications")}
           onUpdateProfile={handleUpdateProfile}
           isAdmin={user?.is_staff}
         />
       )}
-      {screen === "notifications" && (
-        <NotificationsScreen
-          notifications={notifications}
-          onBack={() => setScreen("workspace")}
-          onMarkRead={(id) =>
-            setNotifications((all) =>
-              all.map((n) => (n.id === id ? { ...n, read: true } : n))
-            )
-          }
-        />
-      )}
+
       {screen === "rooms" && (
         <RoomsScreen
           rooms={rooms}
@@ -647,15 +641,6 @@ const Index = () => {
           }}
         />
       )}
-
-      <SideMenu
-        open={menuOpen}
-        user={user}
-        onClose={() => setMenuOpen(false)}
-        onNavigate={handleNavigate}
-        onOpenNotifications={() => setScreen("notifications")}
-        onLogout={handleLogout}
-      />
 
       <ScannerModal
         open={scannerOpen}

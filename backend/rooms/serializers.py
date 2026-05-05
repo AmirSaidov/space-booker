@@ -28,7 +28,7 @@ class PlaceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Place
-        fields = ['id', 'number', 'status', 'backend_status', 'occupied_at', 'user', 'user_name']
+        fields = ['id', 'number', 'status', 'backend_status', 'occupied_at', 'user', 'user_name', 'qr_code']
 
     def get_status(self, obj):
         return {

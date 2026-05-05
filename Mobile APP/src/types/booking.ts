@@ -3,6 +3,7 @@ export type DeskStatus = "available" | "occupied" | "mine";
 export interface Desk {
   id: number; // visual number
   dbId?: number; // backend primary key
+  qrCode?: string; // backend qr code value
   status: DeskStatus;
   // grid position & size for the floor map
   col: number;

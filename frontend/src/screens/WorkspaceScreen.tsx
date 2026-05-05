@@ -7,11 +7,8 @@ import { Desk, Room } from "@/types/booking";
 interface WorkspaceScreenProps {
   room: Room;
   myDeskId: number | null;
-  unreadCount: number;
   onScan: () => void;
   onDeskClick: (desk: Desk) => void;
-  onOpenMenu: () => void;
-  onOpenNotifications: () => void;
   onOpenRooms: () => void;
   onNavigate: (key: NavKey) => void;
   isAdmin?: boolean;
@@ -20,34 +17,16 @@ interface WorkspaceScreenProps {
 export const WorkspaceScreen = ({
   room,
   myDeskId,
-  unreadCount,
   onScan,
   onDeskClick,
-  onOpenMenu,
-  onOpenNotifications,
   onOpenRooms,
   onNavigate,
   isAdmin = false,
 }: WorkspaceScreenProps) => {
   return (
     <div className="flex-1 flex flex-col bg-background">
-      <header className="px-5 md:px-8 pt-4 pb-3 flex items-center justify-between">
-        <button onClick={onOpenMenu} className="p-1.5 -ml-1.5 text-foreground" aria-label="Меню">
-          <Menu className="w-6 h-6" />
-        </button>
+      <header className="px-5 md:px-8 pt-4 pb-3 flex items-center justify-center">
         <h1 className="text-base font-semibold">Мои места</h1>
-        <button
-          onClick={onOpenNotifications}
-          className="p-1.5 -mr-1.5 text-foreground relative"
-          aria-label="Уведомления"
-        >
-          <Bell className="w-6 h-6" />
-          {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-              {unreadCount}
-            </span>
-          )}
-        </button>
       </header>
 
       <div className="px-5 md:px-8">

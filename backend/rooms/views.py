@@ -280,16 +280,32 @@ class AdminHistoryView(APIView):
             .select_related('user', 'place', 'place__room')
             .order_by('-start_time')
         )
+
         history, error = apply_history_filters(history, request.query_params)
         if error:
             return Response({"success": False, "message": error}, status=400)
-        
-        from rest_framework.pagination import PageNumberPagination
-        paginator = PageNumberPagination()
-        paginator.page_size = 50
-        result_page = paginator.paginate_queryset(history, request)
-        serializer = OccupancyHistorySerializer(result_page, many=True)
-        return paginator.get_paginated_response(serializer.data)
+
+        data = []
+        for item in history:
+            user = item.user
+            place = item.place
+            room = place.room if place else None
+
+            data.append({
+                "id": item.id,
+                "user_id": user.id if user else None,
+                "user_name": getattr(user, "name", "") or getattr(user, "username", "") or "User",
+                "user_email": getattr(user, "email", "") or "Без email",
+                "room_id": room.id if room else None,
+                "room_name": room.name if room else "-",
+                "place_id": place.id if place else None,
+                "place_number": place.number if place else "-",
+                "start_time": item.start_time,
+                "end_time": item.end_time,
+                "status": "active" if item.end_time is None else "completed",
+            })
+
+        return Response(data)
 
 class AdminActiveBookingsView(APIView):
     permission_classes = [IsAdminUser]
@@ -303,16 +319,21 @@ class AdminActiveBookingsView(APIView):
 
         data = []
         for item in active:
+            user = item.user
+            place = item.place
+            room = place.room if place else None
+
             data.append({
                 "id": item.id,
-                "user_id": item.user.id,
-                "user_name": getattr(item.user, 'name', '') or item.user.username,
-                "user_email": item.user.email,
-                "room_id": item.place.room.id,
-                "room_name": item.place.room.name,
-                "place_id": item.place.id,
-                "place_number": item.place.number,
+                "user_id": user.id if user else None,
+                "user_name": getattr(user, "name", "") or getattr(user, "username", "") or "User",
+                "user_email": getattr(user, "email", "") or "Без email",
+                "room_id": room.id if room else None,
+                "room_name": room.name if room else "-",
+                "place_id": place.id if place else None,
+                "place_number": place.number if place else "-",
                 "start_time": item.start_time,
+                "end_time": item.end_time,
                 "status": "active",
             })
 
